@@ -13,7 +13,7 @@ logging.basicConfig(
 # app  = FastAPI()
 
 # @app.get("/bybit/ohlcv")
-def get_bybit_price_ohlcv(
+async def get_bybit_price_ohlcv(
     symbol="BTCUSDT",
     interval="15",       
     start_time=None,
