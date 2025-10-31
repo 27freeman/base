@@ -578,33 +578,32 @@ async def Fetch_Price(session,params,end_time,limit):
 
 
     while True:
-        try:
-            price_data = await get_bybit_price_ohlcv(
-                symbol=symbol,
-                interval=interval,
-                start_time=start_time,
-                end_time=end_time,
-                limit=limit
-                )
-            
-            print('Data recieved,',price_data)
-            if price_data['result']:
-                searchCount += 1
-                price_data = price_data['result']['list']
-                prices_info = prices_info + price_data
-                if len(prices_info) >= limit:
-                    return {'Timeframe_minute':{limit:prices_info},'start_time':params['start_time'],'end_time':end_time}
-                elif searchCount >= expectedSearch:
-                    return {'Timeframe_minute':{limit:prices_info},'start_time':params['start_time'],'end_time':end_time}
-                else:
-                    first_entry = price_data[-1]
-                    params['end_time'] = first_entry[0]
-                    continue
+    
+        price_data = await get_bybit_price_ohlcv(
+            symbol=symbol,
+            interval=interval,
+            start_time=start_time,
+            end_time=end_time,
+            limit=limit
+            )
+        
+        print('Data recieved,',price_data)
+        if price_data['result']:
+            searchCount += 1
+            price_data = price_data['result']['list']
+            prices_info = prices_info + price_data
+            if len(prices_info) >= limit:
+                return {'Timeframe_minute':{limit:prices_info},'start_time':params['start_time'],'end_time':end_time}
+            elif searchCount >= expectedSearch:
+                return {'Timeframe_minute':{limit:prices_info},'start_time':params['start_time'],'end_time':end_time}
             else:
-                logging.error(f'Empty Price Data. Check Your Parameters')
-                return {'Error':f'Empty Price Data. Check Your Parameters'}
-        except Exception as e:
-            print('Issue is ',e)
+                first_entry = price_data[-1]
+                params['end_time'] = first_entry[0]
+                continue
+        else:
+            logging.error(f'Empty Price Data. Check Your Parameters')
+            return {'Error':f'Empty Price Data. Check Your Parameters'}
+    
 
 
 
