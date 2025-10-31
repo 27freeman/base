@@ -5,7 +5,6 @@ import time,os,sys
 import asyncio,aiohttp
 from datetime import datetime,timedelta
 
-from price_feed import get_bybit_price_ohlcv,search_binance_Ticker,search_bybit_Ticker,get_binance_price_ohlcv
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s"
@@ -22,10 +21,10 @@ BINANCE_TICKER_URL = 'https://bybit-ohlcv-170603173514.europe-west1.run.app/bina
 BYBIT_TICKER_URL =  'https://bybit-ohlcv-170603173514.europe-west1.run.app/bybit/tickers' # search_Ticker
 
 
-# BYBIT_OHLCV_URL = 'https://bybit-ohlcv2.onrender.com/bybit/ohlcv'
-# BINANCE_OHLCV_URL = 'https://bybit-ohlcv2.onrender.com/binance/ohlcv' # For binance price
-# BINANCE_TICKER_URL = 'https://bybit-ohlcv2.onrender.com/binance/tickers'
-# BYBIT_TICKER_URL =  'https://bybit-ohlcv2.onrender.com/bybit/tickers'
+BYBIT_OHLCV_URL = 'https://base-xhtw.onrender.com/ticker/bybit/ohlcv'
+BINANCE_OHLCV_URL =  'https://base-xhtw.onrender.com/ticker/binance/ohlcv' # For binance price
+BINANCE_TICKER_URL = 'https://base-xhtw.onrender.com/ticker/binance/tickers'
+BYBIT_TICKER_URL =   'https://base-xhtw.onrender.com/ticker/bybit/tickers'
 
 # BASESEARCH_LINK_URL = 'https://basesearchV3.onrender.com/link_search/'
 # BASESEARCH_LINK_URL = 'http://127.0.0.1:8000/link_search/'
@@ -544,65 +543,65 @@ async def Fetch_Price(session,params,end_time,limit):
     logging.info('Fetching Prices')
     searchCount = 0
     expectedSearch = (limit/1000) + 1
-    # params['end_time'] = end_time
-    # params['limit'] = limit
+    params['end_time'] = end_time
+    params['limit'] = limit
     
-    symbol = params['symbol']
-    interval = params['interval']
-    start_time = params['start_time']
+    # symbol = params['symbol']
+    # interval = params['interval']
+    # start_time = params['start_time']
     prices_info = []
-    # url = 'https://bybit-ohlcv.onrender.com/bybit/ohlcv'
-    # while True:
-    #     async with session.get(url=BYBIT_OHLCV_URL,params=params) as response:
-    #         if response.status == 200:
-    #             await asyncio.sleep(4)
-    #             result = await response.json()
-    #             if result['result']:
-    #                 searchCount += 1
-    #                 price_data = result['result']['list']
-    #                 prices_info = prices_info + price_data
-    #                 if len(prices_info) >= limit:
-    #                     return {'Timeframe_minute':{limit:prices_info},'start_time':params['start_time'],'end_time':end_time}
-    #                 elif searchCount >= expectedSearch:
-    #                     return {'Timeframe_minute':{limit:prices_info},'start_time':params['start_time'],'end_time':end_time}
-    #                 else:
-    #                     first_entry = price_data[-1]
-    #                     params['end_time'] = first_entry[0]
-    #                     continue
-    #             else:
-    #                 logging.error(f'Empty Price Data. Check Your Parameters')
-    #                 return {'Error':f'Empty Price Data. Check Your Parameters'}
-    #         else:
-    #             logging.error(f'Unable to Fetch Price: code= {response.status }')
-    #             return {'Error':f'Unable to Fetch Price: code= {response.status }'}
-
-
+    url = 'https://bybit-ohlcv.onrender.com/bybit/ohlcv'
     while True:
-    
-        price_data = await get_bybit_price_ohlcv(
-            symbol=symbol,
-            interval=interval,
-            start_time=start_time,
-            end_time=end_time,
-            limit=limit
-            )
-        
-        print('Data recieved,',price_data)
-        if price_data['result']:
-            searchCount += 1
-            price_data = price_data['result']['list']
-            prices_info = prices_info + price_data
-            if len(prices_info) >= limit:
-                return {'Timeframe_minute':{limit:prices_info},'start_time':params['start_time'],'end_time':end_time}
-            elif searchCount >= expectedSearch:
-                return {'Timeframe_minute':{limit:prices_info},'start_time':params['start_time'],'end_time':end_time}
+        async with session.get(url=BYBIT_OHLCV_URL,params=params) as response:
+            if response.status == 200:
+                await asyncio.sleep(4)
+                result = await response.json()
+                if result['result']:
+                    searchCount += 1
+                    price_data = result['result']['list']
+                    prices_info = prices_info + price_data
+                    if len(prices_info) >= limit:
+                        return {'Timeframe_minute':{limit:prices_info},'start_time':params['start_time'],'end_time':end_time}
+                    elif searchCount >= expectedSearch:
+                        return {'Timeframe_minute':{limit:prices_info},'start_time':params['start_time'],'end_time':end_time}
+                    else:
+                        first_entry = price_data[-1]
+                        params['end_time'] = first_entry[0]
+                        continue
+                else:
+                    logging.error(f'Empty Price Data. Check Your Parameters')
+                    return {'Error':f'Empty Price Data. Check Your Parameters'}
             else:
-                first_entry = price_data[-1]
-                params['end_time'] = first_entry[0]
-                continue
-        else:
-            logging.error(f'Empty Price Data. Check Your Parameters')
-            return {'Error':f'Empty Price Data. Check Your Parameters'}
+                logging.error(f'Unable to Fetch Price: code= {response.status }')
+                return {'Error':f'Unable to Fetch Price: code= {response.status }'}
+
+
+    # while True:
+    
+    #     price_data = await get_bybit_price_ohlcv(
+    #         symbol=symbol,
+    #         interval=interval,
+    #         start_time=start_time,
+    #         end_time=end_time,
+    #         limit=limit
+    #         )
+        
+    #     print('Data recieved,',price_data)
+    #     if price_data['result']:
+    #         searchCount += 1
+    #         price_data = price_data['result']['list']
+    #         prices_info = prices_info + price_data
+    #         if len(prices_info) >= limit:
+    #             return {'Timeframe_minute':{limit:prices_info},'start_time':params['start_time'],'end_time':end_time}
+    #         elif searchCount >= expectedSearch:
+    #             return {'Timeframe_minute':{limit:prices_info},'start_time':params['start_time'],'end_time':end_time}
+    #         else:
+    #             first_entry = price_data[-1]
+    #             params['end_time'] = first_entry[0]
+    #             continue
+    #     else:
+    #         logging.error(f'Empty Price Data. Check Your Parameters')
+    #         return {'Error':f'Empty Price Data. Check Your Parameters'}
     
 
 
@@ -615,66 +614,66 @@ async def Fetch_Price_Binance(session,params,end_time,limit):
     params['limit'] = limit + 1
     params['interval'] = '1m'
 
-    symbol = params['symbol']
-    interval = '1m'
-    start_time = params['start_time']
+    # symbol = params['symbol']
+    # interval = '1m'
+    # start_time = params['start_time']
     original_start_time = params['start_time']
     prices_info = []
 
-    #url = 'https://bybit-ohlcv2.onrender.com/binance/ohlcv'
-    # while True:
-    #     async with session.get(url=BINANCE_OHLCV_URL,params=params) as response:
-    #         if response.status == 200:
-    #             await asyncio.sleep(4)
-    #             result = await response.json()
-    #             if result:
-    #                 searchCount += 1
-    #                 price_data = result
-    #                 prices_info = prices_info + price_data
-                    
-    #                 if len(prices_info) >= limit:
-    #                     return {'Timeframe_minute':{limit:list(reversed(prices_info))},'start_time':original_start_time,'end_time':end_time}
-                       
-    #                 elif searchCount >= expectedSearch:
-    #                     return {'Timeframe_minute':{limit:list(reversed(prices_info))},'start_time':original_start_time,'end_time':end_time}
-    #                 else:
-    #                     first_entry = price_data[-1]
-    #                     params['start_time'] = first_entry[0]
-    #                     continue
-    #             else:
-    #                 logging.error(f'Empty Price Data. Check Your Parameters')
-    #                 return {'Error':f'Empty Price Data. Check Your Parameters'}
-    #         else:
-    #             logging.error(f'Unable to Fetch Price: code= {response.status }')
-    #             return {'Error':f'Unable to Fetch Price: code= {response.status }'}
-
-
+    url = 'https://bybit-ohlcv2.onrender.com/binance/ohlcv'
     while True:
-        data = await get_binance_price_ohlcv(
-            symbol=symbol,
-            interval=interval,
-            start_time=start_time,
-            end_time=end_time,
-            limit=limit
-        )
-        print('Data is ',data)
-        if data:
-            searchCount += 1
-            price_data = data
-            prices_info = prices_info + price_data
-            
-            if len(prices_info) >= limit:
-                return {'Timeframe_minute':{limit:list(reversed(prices_info))},'start_time':original_start_time,'end_time':end_time}
-                
-            elif searchCount >= expectedSearch:
-                return {'Timeframe_minute':{limit:list(reversed(prices_info))},'start_time':original_start_time,'end_time':end_time}
+        async with session.get(url=BINANCE_OHLCV_URL,params=params) as response:
+            if response.status == 200:
+                await asyncio.sleep(4)
+                result = await response.json()
+                if result:
+                    searchCount += 1
+                    price_data = result
+                    prices_info = prices_info + price_data
+                    
+                    if len(prices_info) >= limit:
+                        return {'Timeframe_minute':{limit:list(reversed(prices_info))},'start_time':original_start_time,'end_time':end_time}
+                       
+                    elif searchCount >= expectedSearch:
+                        return {'Timeframe_minute':{limit:list(reversed(prices_info))},'start_time':original_start_time,'end_time':end_time}
+                    else:
+                        first_entry = price_data[-1]
+                        params['start_time'] = first_entry[0]
+                        continue
+                else:
+                    logging.error(f'Empty Price Data. Check Your Parameters')
+                    return {'Error':f'Empty Price Data. Check Your Parameters'}
             else:
-                first_entry = price_data[-1]
-                params['start_time'] = first_entry[0]
-                continue
-        else:
-            logging.error(f'Empty Price Data. Check Your Parameters')
-            return {'Error':f'Empty Price Data. Check Your Parameters'}
+                logging.error(f'Unable to Fetch Price: code= {response.status }')
+                return {'Error':f'Unable to Fetch Price: code= {response.status }'}
+
+
+    # while True:
+    #     data = await get_binance_price_ohlcv(
+    #         symbol=symbol,
+    #         interval=interval,
+    #         start_time=start_time,
+    #         end_time=end_time,
+    #         limit=limit
+    #     )
+    #     print('Data is ',data)
+    #     if data:
+    #         searchCount += 1
+    #         price_data = data
+    #         prices_info = prices_info + price_data
+            
+    #         if len(prices_info) >= limit:
+    #             return {'Timeframe_minute':{limit:list(reversed(prices_info))},'start_time':original_start_time,'end_time':end_time}
+                
+    #         elif searchCount >= expectedSearch:
+    #             return {'Timeframe_minute':{limit:list(reversed(prices_info))},'start_time':original_start_time,'end_time':end_time}
+    #         else:
+    #             first_entry = price_data[-1]
+    #             params['start_time'] = first_entry[0]
+    #             continue
+    #     else:
+    #         logging.error(f'Empty Price Data. Check Your Parameters')
+    #         return {'Error':f'Empty Price Data. Check Your Parameters'}
     
 
 
@@ -686,25 +685,25 @@ async def fetch_symbol(symbol:str,url:str) -> str:
     params = {
         'symbol':symbol
     }
-    # async with aiohttp.ClientSession() as session:
-    #     async with session.get(url=url,params=params) as response:
-    #         if response.status == 200:
-    #             result = await response.text()
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url=url,params=params) as response:
+            if response.status == 200:
+                result = await response.text()
 
-    #             if result == 'null' or result == None:
-    #                 return '!Error'
-    #             return result[1:-1]
-    #         logging.error(f'Unable to Fetch symbol: code= {response.status }')
-            # return {'Error':f'Unable to Fetch symbol: code= {response.status }'}
+                if result == 'null' or result == None:
+                    return '!Error'
+                return result[1:-1]
+            logging.error(f'Unable to Fetch symbol: code= {response.status }')
+            return {'Error':f'Unable to Fetch symbol: code= {response.status }'}
 
-    if url == BINANCE_TICKER_URL:
-        symbol_data = await search_binance_Ticker(symbol=symbol)
-    else:
-        symbol_data = await search_bybit_Ticker(symbol=symbol)
+    # if url == BINANCE_TICKER_URL:
+    #     symbol_data = await search_binance_Ticker(symbol=symbol)
+    # else:
+    #     symbol_data = await search_bybit_Ticker(symbol=symbol)
     
-    if symbol_data == 'null' or symbol_data == None:
-        return '!Error'
-    return symbol_data[1:-1]
+    # if symbol_data == 'null' or symbol_data == None:
+    #     return '!Error'
+    # return symbol_data[1:-1]
     
 
 
@@ -841,5 +840,168 @@ def process_link(tickers:str,start_date:str,timeframe:str) ->list:
     ticker_price_data = asyncio.run(main())
     return ticker_price_data
 
+
+
+@app.get("/bybit/ohlcv")
+async def get_bybit_price_ohlcv(
+    symbol="BTCUSDT",
+    interval="15",       
+    start_time=None,
+    end_time=None,
+    limit=1000,
+    checkAlive: bool = False
+):
+    if checkAlive:
+        logging.info("Checking if Bybit API is alive...")
+        return {"status": "API is alive"}
+      
+    # url = f"https://api.bybit.com/v5/market/kline?symbol={symbol}&interval={interval}&start={start_time}&end={end_time}&limit={limit}"
+    spot_url = f"https://api.bybit.com/v5/market/kline"
+    perp_url = f"https://api.bybit.com/v5/market/kline"
+    urls = [perp_url,spot_url]
+
+    params = {
+        'category':'linear',
+        "symbol": symbol,
+        "interval": interval,
+        "start": start_time,
+        "end": end_time,
+        "limit": limit
+    }
+
+   
+
+    for  index ,url in enumerate(urls):
+        response = requests.get(url,params=params)
+        if response.status_code == 200:
+            logging.info(f"{params}")
+            data = response.json()
+            logging.info(f"Successfuflly Fetched Price For Symbol: {symbol} with Interval: {interval}")
+            return data
+        elif index == 1:
+            return {"error": f"Failed to fetch data: {response.status_code}"}
+        else:
+            params['category'] = 'spot'
+            continue
+    
+#-------------------------------------------------------------------------------------------------------------------------  
+
+async def tickerRequests(symbol:str,paired:str|None=None):
+    spot_url = 'https://api.bybit.com/v5/market/tickers'
+    perp_url =  'https://api.bybit.com/v5/market/tickers'
+    urls = [perp_url,spot_url]
+
+    if paired:
+        pair = f'{symbol.upper()}{paired.upper()}'
+    else:
+        paired = 'USDT'
+        pair = f'{symbol.upper()}{paired.upper()}'
+    params = {
+    'category':'linear',
+    'symbol':pair
+    }
+
+    async with aiohttp.ClientSession() as session:
+
+        for index,url in enumerate(urls):
+
+            async with session.get(url=url,params=params) as response:
+               
+                if response.status == 200:
+                    print('recieved')
+                    result = await response.json()
+                    print(result)
+                    if result['retMsg'] == 'OK':
+                        try:
+                            symbol = result['result']['list'][0]['symbol']
+                            return symbol
+                        except:
+                            if index == 1:
+                                return {'Error':'No matching pairs'}
+                            else:
+                                params['category'] = 'spot'
+                                continue
+                elif index == 1:
+                    return {'Error':f'Unable To Fetch Ticker.Error Code {response.status}'}
+                else:
+                    params['category'] = 'spot'
+                    continue
+    
+
+@app.get('/bybit/tickers/')
+async def search_bybit_Ticker(symbol:str,paired:str|None=None):
+    if paired:
+        ticker_info = await asyncio.create_task(tickerRequests(symbol=symbol,paired=paired))
+        return ticker_info
+    ticker_info = await asyncio.create_task(tickerRequests(symbol=symbol))
+    return ticker_info
+
+
+@app.get('/binance/tickers/')
+async def search_binance_Ticker(symbol:str):
+    spot_url = 'https://api.binance.com/api/v3/ticker/price'
+    perp_url = 'https://fapi.binance.com/fapi/v1/ticker/price'
+
+    urls = [perp_url,spot_url]
+    params = {
+        'symbol':f'{symbol.upper()}USDT'
+        }
+    logging.info('About To Fetch Ticker On Binance')
+
+    async with aiohttp.ClientSession() as session:
+        
+        for index,url in enumerate(urls):
+            async with session.get(url=url,params=params) as response:
+                if response.status == 200:
+                    result = await response.json()
+
+                    if result['symbol']:
+                        try:
+                            symbol = result['symbol']
+                            return symbol
+                        except:
+                            if index == 1:
+                                return {'Error':'No matching pairs'}
+                            else:
+                                continue
+                elif index == 1:
+                    return {'Error':f'Unable To Fetch Ticker.Error Code {response.status}'}
+                else:
+                    continue
+   
+
+@app.get('/binance/ohlcv')
+async def get_binance_price_ohlcv(
+    symbol="BTCUSDT",
+    interval="1m",       
+    start_time=None,
+    end_time=None,
+    limit=1000
+    ):
+
+    spot_url = 'https://api.binance.com/api/v3/klines'
+    perp_url = 'https://fapi.binance.com/fapi/v1/klines'
+
+    urls = [perp_url,spot_url]
+
+    params = {
+            "symbol": symbol,
+            "interval": interval,
+            "startTime": start_time,
+            "endTime": end_time,
+            "limit": limit
+        }
+    
+    for index, url in enumerate(urls):
+        response = requests.get(url,params=params)
+
+        if response.status_code == 200:
+            data = response.json()
+            logging.info(f"Successfuflly Fetched Price For Symbol: {symbol} with Interval: {interval}")
+            return data
+        elif index == 1:
+            return {"error": f"Failed to fetch data: {response.status_code}"}
+        else:
+            continue
 
 
