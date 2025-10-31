@@ -586,6 +586,7 @@ async def Fetch_Price(session,params,end_time,limit):
             limit=limit
             )
         
+        print('Data recieved,',price_data)
         if price_data['result']:
             searchCount += 1
             price_data = price_data['result']['list']
@@ -655,6 +656,7 @@ async def Fetch_Price_Binance(session,params,end_time,limit):
             end_time=end_time,
             limit=limit
         )
+        print('Data is ',data)
         if data:
             searchCount += 1
             price_data = data
