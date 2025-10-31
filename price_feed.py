@@ -10,6 +10,7 @@ logging.basicConfig(
 
 
 
+
 # app  = FastAPI()
 
 # @app.get("/bybit/ohlcv")
@@ -334,4 +335,5 @@ async def fetchPrice(network,pair,tweeted_date,timeframe,poolId):
         return pair_price_data
     price_timeframes = await process_pair(network,pair,tweeted_date,int(timeframe),poolId)
     return price_timeframes 
+
 
